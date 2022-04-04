@@ -1,0 +1,113 @@
+---
+title: "Assessment 2"
+author: "Prattusha Kar"
+date: "29/03/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# install.packages("repr")
+# install.packages("tidyverse")
+# install.packages("plotly")
+
+library(readr)
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(repr)
+library(plotly)
+```
+
+
+```{r data}
+Ind_riot <- read.csv("C:/Users/Prattusha.Banerjee/Desktop/DIGITAL/DS/Visualisation/Data/2019-2022-South_Asia-India.csv")
+head(Ind_riot)
+
+unique(Ind_riot$event_type)
+```
+
+```{r data_cleanup}
+select(Ind_riot, -c("iso", "iso3", "country","region"))
+
+Ind_riot%>%drop_na()
+Ind_riot[complete.cases(Ind_riot), ]
+
+```
+
+
+```{r groupby 1}
+Ind_riot %>%
+  group_by(event_type)%>%
+  summarise(count = n())
+```
+
+
+
+```{r groupby 2}
+Ind_riot %>%
+  group_by(event_type, sub_event_type) %>%
+  summarise(count = n())
+```
+
+```{r groupby 4}
+Ind_riot %>%
+  group_by(sub_event_type) %>%
+  summarise(count = n())
+```
+```{r}
+df <- Ind_riot %>%
+  group_by(event_type, sub_event_type) %>%
+  summarise(count = n())
+
+#df$year <- factor(df$year)
+
+df
+
+df$log_value <- round(log(df$count),2)
+
+
+
+df
+```
+
+
+```{r fig.height = 10, fig.width = 15}
+
+options(repr.plot.width = 6, repr.plot.height = 3)
+
+p <- ggplot(data = df, aes(x = reorder(sub_event_type, log_value), y = log_value, fill = event_type)) +
+  geom_bar(stat="identity") +
+  
+  geom_text(aes(y= log_value, label = count), vjust = 3, hjust = 0.5, size = 3,
+            position = position_dodge(0.9)) +
+  
+  labs(title = "Events of violence in India - Distribution by count", x = " sub_event_type")+
+  theme(text = element_text(size=12),
+        axis.text.x = element_text(angle=90, hjust=0))+
+  
+  #coord_fixed(ratio = 0.2)+
+  
+  # This makes the coordinate polar instead of cartesian.
+ coord_flip()
+  
+p
+
+
+```
+
+
+```{r plotly2 fig.height = 10, fig.width = 15}
+
+options(repr.plot.width = 16, repr.plot.height = 3)
+#p_plotly <- ggplotly(p)
+
+pt<-ggplotly(p) 
+
+pt
+ 
+```
