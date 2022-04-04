@@ -1,0 +1,110 @@
+---
+title: "Assignment 2"
+author: "Prattusha Kar (S3886065)"
+subtitle: Deconstruct, Reconstruct Web Report
+output:
+  html_document: default
+  pdf_document: default
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+# Do not change these settings!
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+### {.tabset} 
+
+
+Click the **Original**, **Code** and **Reconstruction** tabs to read about the issues and how they were fixed. 
+
+#### Original
+
+<br>
+<center>
+<img src="C:/Users/Prattusha.Banerjee/Desktop/DIGITAL/DS/Visualisation/ASSESSMENT2/ASSIGNMENT_2/riot_image.jpg" width="80%">
+</center>
+<center>*Source: Kaggle*</center>
+<br>
+
+**Objective**
+
+The original data visualisation was developed in order to understand the distribution of the riots and the sub event of the riots happened in various parts of India during 2016-2022. The dataset which contains more than 100K records is taken from kaggle, which was originally taken from The Armed Conflict Location & Event Data Project (ACLED), a non-governmental organization specializing in collecting high quality real-time data on political violence and protests around the globe.The main purpose of the visualisation was to understand the occurrence of the sub events and the events of political violence. From the dataset it is evident that the majority type of the riot was in the form of protest but does the visualisation demonstrate a meaningful message about the counts of riots and the sub events of the riots? Why do we need to show a pretty picture, if the picture can't be analysed?
+
+Whilst the target audience is not specifically defined, it can be assumed based on the objective that the audience is the general public.
+
+The visualisation chosen in the original code represents the data in form of stacked pie chart and has the following main issues:
+
+* The stacked pie chart is not an ideal way of representing when there are many different types of events, it become visually very complex and also very crowded and thus analyzing and assimilating information out of the plot is hard for readers. 
+* Our brains are not good at comparing the size of angles and slices within a stacked pie chart. Since the plot is not visually effective, drawing conclusions based on the visual impact could be inaccurate as well.
+* Predominantly summation of all the slices of the pie chart should return 100%, a reader could make a mistake that sum of slices represent some sort of total, which isn't the case here.
+
+
+
+
+
+**Reference**
+
+* Source: https://www.kaggle.com/code/akshayraman/eda-100k-riots-protests-in-india-2016-2022
+* Source: https://www.perceptualedge.com/articles/visual_business_intelligence/save_the_pies_for_dessert.pdf
+
+
+#### Code
+
+The following code was used to fix the issues identified in the original. 
+
+```{r package}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(repr)
+library(plotly)
+
+```
+
+```{r plot}
+#load data
+Ind_riot <- read.csv("C:/Users/Prattusha.Banerjee/Desktop/DIGITAL/DS/Visualisation/Data/2016-2022.csv")
+
+# Selecting only the event type and sub event type by group by function and summarise their counts
+df <- Ind_riot %>%
+  group_by(event_type, sub_event_type) %>%
+  summarise(count = n())
+
+#Using the log function for count since there is a huge gap between the max and min
+df$log_value <- round(log(df$count),2)
+
+#plotting using ggplot library
+p <- ggplot(data = df, aes(x = reorder(sub_event_type, log_value), y = log_value, fill = event_type)) +
+  geom_bar(stat="identity") +
+  
+  geom_text(aes(y= log_value, label = count), vjust = 3, hjust = 0.5, size = 3,
+            position = position_dodge(0.9)) +
+  
+  #plot labels
+  labs(title = "Events of violence in India - Distribution by count", x = " sub_event_type")+
+  
+  #theme option
+  theme(text = element_text(size=10),
+        axis.text.x = element_text(angle=0, hjust=0))+
+  
+   # This makes the plot flip by 90 deg
+ coord_flip()
+
+```
+
+**Data Reference**
+
+* Source: The Armed Conflict Location & Event Data Project (ACLED)
+
+#### Reconstruction
+
+The following plot fixes the main issues in the original.
+
+```{r fig.align="center", echo = FALSE}
+
+pt <- ggplotly(p, height = 750, width = 1000)
+
+pt
+```
+
